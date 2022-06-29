@@ -14,31 +14,20 @@ export class CompaniesService {
     return company;
   }
 
-  async getAllCompanies(order: string, reverse: string) {
-    if (order === 'name' || order === 'serviceOfActivity') {
-      const companies = await this.companyRepository.findAll({
-        order: [[order, +reverse ? 'DESC' : 'ASC']],
-      });
-      return companies;
-    }
-    const companies = await this.companyRepository.findAll();
+  async getAllCompanies(sort = 'updatedAt', order = 'ASC') {
+    const companies = await this.companyRepository.findAll({
+      order: [[sort, order]],
+    });
     return companies;
   }
   async getAllCompaniesFromUserId(
     userId: number,
-    orderBy: string,
-    reverse: string,
+    sort = 'updatedAt',
+    order = 'ASC',
   ) {
-    if (orderBy === 'name' || orderBy === 'serviceOfActivity') {
-      const companies = await this.companyRepository.findAll({
-        where: { userId },
-        order: [[orderBy, +reverse ? 'DESC' : 'ASC']],
-      });
-      return companies;
-    }
     const companies = await this.companyRepository.findAll({
       where: { userId },
-      order: [['updatedAt', 'DESC']],
+      order: [[sort, order]],
     });
     return companies;
   }

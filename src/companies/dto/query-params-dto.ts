@@ -6,5 +6,5 @@ export class FindQuery {
   sort: string;
   @IsString()
   @IsOptional()
-  reverse: string;
+  order: string;
 }

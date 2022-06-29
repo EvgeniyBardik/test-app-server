@@ -59,15 +59,14 @@ export class CompaniesController {
   @Get()
   getAll(@DataFromToken() dataFromToken: TokenData, @Query() query: FindQuery) {
     const sort = query?.sort;
-    const reverse = query?.reverse;
-    console.log(sort);
+    const order = query?.order;
     if (dataFromToken.role === 'ADMIN') {
-      return this.companiesService.getAllCompanies(sort, reverse);
+      return this.companiesService.getAllCompanies(sort, order);
     }
     return this.companiesService.getAllCompaniesFromUserId(
       dataFromToken.id,
       sort,
-      reverse,
+      order,
     );
   }
 
