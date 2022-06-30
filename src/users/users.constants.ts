@@ -5,3 +5,4 @@ export const THE_EMAIL_ALREADY_EXISTS =
 export const NOT_HAVE_ACCESS = 'You do not have access';
 export const THE_NICK_NAME_ALREADY_EXISTS =
   'User with this nick name already exists';
+export const THIS_EMAIL_IS_RESERVED = 'This email is reserved';

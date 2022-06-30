@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { CreateUserDto } from './dto/create-user-dto';
 import { UpdateUserDto } from './dto/update-user-dto';
 import { User } from './users.model';
 import * as bcrypt from 'bcryptjs';
+import { THIS_EMAIL_IS_RESERVED } from './users.constants';
 
 @Injectable()
 export class UsersService {
@@ -13,6 +14,11 @@ export class UsersService {
     const adminPassword = process.env.ADMIN_PASSWORD;
 
     const isAdmin = dto.email === adminEmail && dto.password === adminPassword;
+    const adminWrongPassword =
+      dto.email === adminEmail && dto.password !== adminPassword;
+    if (adminWrongPassword) {
+      throw new HttpException(THIS_EMAIL_IS_RESERVED, HttpStatus.BAD_REQUEST);
+    }
     const salt = await bcrypt.genSalt(10);
     const hashPassword = await bcrypt.hash(dto.password, salt);
     const user = await this.userRepository.create({
@@ -49,7 +55,7 @@ export class UsersService {
     removeUser.destroy();
     return removeUser;
   }
-  async update(id, userDto: UpdateUserDto): Promise<User> {
+  async update(id: string, userDto: UpdateUserDto): Promise<User> {
     const userToUpdate = await this.getUserById(id);
     if (!userToUpdate) {
       return null;
