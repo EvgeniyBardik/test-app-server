@@ -1,10 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { CreateUserDto } from './dto/create-user-dto';
 import { UpdateUserDto } from './dto/update-user-dto';
 import { User } from './users.model';
 import * as bcrypt from 'bcryptjs';
-import { USER_NOT_FOUND_ERROR_ID } from './users.constants';
 
 @Injectable()
 export class UsersService {
@@ -24,8 +23,8 @@ export class UsersService {
     return user;
   }
 
-  async getAllUsers() {
-    const users = await this.userRepository.findAll();
+  async getAllUsers(sort = 'email', order = 'ASC') {
+    const users = await this.userRepository.findAll({ order: [[sort, order]] });
     return users;
   }
   async getUserByEmail(email: string) {

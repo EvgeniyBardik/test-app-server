@@ -9,6 +9,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { AdminGuard } from 'src/decorators/roles.guard';
@@ -25,7 +26,7 @@ import {
 import { User } from './users.model';
 import { UsersService } from './users.service';
 import { TokenData } from './dto/token-user-data-dto';
-import { Public } from 'src/auth/public';
+import { FindQuery } from './dto/query-params-dto';
 
 @Controller('users')
 export class UsersController {
@@ -79,8 +80,10 @@ export class UsersController {
 
   @UseGuards(AdminGuard)
   @Get()
-  async getAll() {
-    return await this.usersService.getAllUsers();
+  async getAll(@Query() query: FindQuery) {
+    const sort = query?.sort;
+    const order = query?.order;
+    return await this.usersService.getAllUsers(sort, order);
   }
 
   @Delete(':id')
