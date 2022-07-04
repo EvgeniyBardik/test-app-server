@@ -3,6 +3,8 @@ import { InjectModel } from '@nestjs/sequelize';
 import { CreateCompanyDto } from './dto/create-company-dto';
 import { Company } from './companies.model';
 import { UpdateCompanyDto } from './dto/update-company-dto';
+import { User } from 'src/users/users.model';
+import { Sequelize } from 'sequelize-typescript';
 
 @Injectable()
 export class CompaniesService {
@@ -17,6 +19,16 @@ export class CompaniesService {
   async getAllCompanies(sort = 'updatedAt', order = 'ASC') {
     const companies = await this.companyRepository.findAll({
       order: [[sort, order]],
+      attributes: {
+        include: [[Sequelize.col('email'), 'ownerEmail']],
+      },
+      include: [
+        {
+          model: User,
+          as: 'owner',
+          attributes: [],
+        },
+      ],
     });
     return companies;
   }

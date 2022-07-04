@@ -13,7 +13,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AdminGuard } from 'src/decorators/roles.guard';
-import { DataFromToken } from 'src/decorators/data-from-token.decorator';
+import { GetUser } from 'src/decorators/get-user.decorator';
 import { CreateUserDto } from './dto/create-user-dto';
 import { FindIdParams } from './dto/find-id-dto';
 import { UpdateUserDto } from './dto/update-user-dto';
@@ -25,12 +25,16 @@ import {
 } from './users.constants';
 import { User } from './users.model';
 import { UsersService } from './users.service';
-import { TokenData } from './dto/token-user-data-dto';
 import { FindQuery } from './dto/query-params-dto';
+import { AbilityFactory } from 'src/ability/ability.factory';
+import { Actions } from 'src/ability/actions.enum';
 
 @Controller('users')
 export class UsersController {
-  constructor(private usersService: UsersService) {}
+  constructor(
+    private usersService: UsersService,
+    private ablilityFactory: AbilityFactory,
+  ) {}
 
   @UseGuards(AdminGuard)
   @Post()
@@ -51,12 +55,7 @@ export class UsersController {
     return this.usersService.createUser(userDto);
   }
   @Get('profile')
-  async getOneFromToken(
-    @DataFromToken() dataFromToken: TokenData,
-  ): Promise<User> {
-    const user = await this.usersService.getUserById(
-      dataFromToken.id.toString(),
-    );
+  async getOneFromToken(@GetUser() user: User): Promise<User> {
     if (!user) {
       throw new NotFoundException(USER_NOT_FOUND_ERROR_ID);
     }
@@ -66,16 +65,17 @@ export class UsersController {
   @Get(':id')
   async getOneById(
     @Param() params: FindIdParams,
-    @DataFromToken() dataFromToken: TokenData,
+    @GetUser() user: User,
   ): Promise<User> {
-    if (dataFromToken.id !== +params.id && dataFromToken.role !== 'ADMIN') {
-      throw new HttpException(NOT_HAVE_ACCESS, HttpStatus.FORBIDDEN);
-    }
-    const user = await this.usersService.getUserById(params.id);
-    if (!user) {
+    const userLookingFor = await this.usersService.getUserById(params.id);
+    if (!userLookingFor) {
       throw new NotFoundException(USER_NOT_FOUND_ERROR_ID);
     }
-    return user;
+    const ability = this.ablilityFactory.createForUser(user);
+    if (!ability.can(Actions.Read, userLookingFor)) {
+      throw new HttpException(NOT_HAVE_ACCESS, HttpStatus.FORBIDDEN);
+    }
+    return userLookingFor;
   }
 
   @UseGuards(AdminGuard)
@@ -89,9 +89,14 @@ export class UsersController {
   @Delete(':id')
   async remove(
     @Param() params: FindIdParams,
-    @DataFromToken() dataFromToken: TokenData,
+    @GetUser() user: User,
   ): Promise<any> {
-    if (dataFromToken.id !== +params.id && dataFromToken.role !== 'ADMIN') {
+    const candidate = await this.usersService.getUserById(params.id);
+    if (!candidate) {
+      throw new NotFoundException(USER_NOT_FOUND_ERROR_ID);
+    }
+    const ability = this.ablilityFactory.createForUser(user);
+    if (!ability.can(Actions.Delete, candidate)) {
       throw new HttpException(NOT_HAVE_ACCESS, HttpStatus.FORBIDDEN);
     }
     const deleteUser = await this.usersService.remove(params.id);
@@ -105,11 +110,8 @@ export class UsersController {
   async update(
     @Body() updateUserDto: UpdateUserDto,
     @Param() params: FindIdParams,
-    @DataFromToken() dataFromToken: TokenData,
+    @GetUser() user: User,
   ) {
-    if (dataFromToken.id !== +params.id && dataFromToken.role !== 'ADMIN') {
-      throw new HttpException(NOT_HAVE_ACCESS, HttpStatus.FORBIDDEN);
-    }
     const hasTheSameEmail = await this.usersService.getUserByEmail(
       updateUserDto.email,
     );
@@ -125,7 +127,15 @@ export class UsersController {
         HttpStatus.BAD_REQUEST,
       );
     }
+    const candidate = await this.usersService.getUserById(params.id);
+    if (!candidate) {
+      throw new NotFoundException(USER_NOT_FOUND_ERROR_ID);
+    }
 
+    const ability = this.ablilityFactory.createForUser(user);
+    if (!ability.can(Actions.Update, candidate)) {
+      throw new HttpException(NOT_HAVE_ACCESS, HttpStatus.FORBIDDEN);
+    }
     const updateUser = await this.usersService.update(params.id, updateUserDto);
     if (!updateUser) {
       throw new NotFoundException(USER_NOT_FOUND_ERROR_ID);

@@ -8,6 +8,7 @@ import { Company } from './companies/companies.model';
 import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { APP_GUARD } from '@nestjs/core';
+import { AbilityModule } from './ability/ability.module';
 
 @Module({
   controllers: [],
@@ -34,6 +35,7 @@ import { APP_GUARD } from '@nestjs/core';
     UsersModule,
     CompaniesModule,
     AuthModule,
+    AbilityModule,
   ],
 })
 export class AppModule {}

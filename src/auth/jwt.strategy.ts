@@ -17,11 +17,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
   async validate(payload: any) {
-    const { id, role, iat } = payload;
+    const { id, iat } = payload;
     const user = await this.usersService.getUserById(id);
+    // compares logout time with token creation time
     if (Math.round(user.logoutTime / 1000) > iat) {
       return false;
     }
-    return { id, role, iat };
+    return user;
   }
 }

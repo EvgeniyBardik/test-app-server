@@ -7,13 +7,13 @@ import {
   HttpStatus,
   Post,
 } from '@nestjs/common';
-import { DataFromToken } from 'src/decorators/data-from-token.decorator';
+import { GetUser } from 'src/decorators/get-user.decorator';
 import { CreateUserDto } from 'src/users/dto/create-user-dto';
-import { TokenData } from 'src/users/dto/token-user-data-dto';
 import {
   THE_EMAIL_ALREADY_EXISTS,
   THE_NICK_NAME_ALREADY_EXISTS,
 } from 'src/users/users.constants';
+import { User } from 'src/users/users.model';
 import { UsersService } from 'src/users/users.service';
 import { AuthService } from './auth.service';
 import { LoginUserDto } from './dto/login-user-dto';
@@ -65,8 +65,8 @@ export class AuthController {
   }
 
   @Get('/logout')
-  async logout(@DataFromToken() dataFromToken: TokenData) {
-    const user = this.authService.logout(dataFromToken.id);
-    return user;
+  async logout(@GetUser() user: User) {
+    const userLogout = this.authService.logout(user.id);
+    return userLogout;
   }
 }
