@@ -30,13 +30,13 @@ import { AbilityModule } from './ability/ability.module';
       database: process.env.POSTGRES_DB,
       models: [User, Company],
       autoLoadModels: true,
-      ssl: true,
-      dialectOptions: {
-        ssl: {
-          require: true,
-          rejectUnauthorized: false,
-        },
-      },
+      // ssl: true,  // <- for heroku
+      // dialectOptions: {
+      //   ssl: {
+      //     require: true,
+      //     rejectUnauthorized: false,
+      //   },
+      // },
     }),
     UsersModule,
     CompaniesModule,
