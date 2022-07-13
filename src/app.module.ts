@@ -9,7 +9,6 @@ import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { APP_GUARD } from '@nestjs/core';
 import { AbilityModule } from './ability/ability.module';
-
 @Module({
   controllers: [],
   providers: [
@@ -31,6 +30,13 @@ import { AbilityModule } from './ability/ability.module';
       database: process.env.POSTGRES_DB,
       models: [User, Company],
       autoLoadModels: true,
+      // ssl: true,  // <- for heroku
+      // dialectOptions: {
+      //   ssl: {
+      //     require: true,
+      //     rejectUnauthorized: false,
+      //   },
+      // },
     }),
     UsersModule,
     CompaniesModule,
